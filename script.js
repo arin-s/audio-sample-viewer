@@ -25,7 +25,7 @@ class AudioManager {
     }
   }
 
-  async populateDeviceList() {
+  async setupDeviceList() {
     let devices;
     try {
       devices = await navigator.mediaDevices.enumerateDevices();
@@ -68,7 +68,7 @@ async function main() {
   let audioManager = new AudioManager();
   await audioManager.getAudioPerms();
   await audioManager.setupDeviceList();
-  
+
 }
 
 
