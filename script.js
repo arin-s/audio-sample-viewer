@@ -54,13 +54,29 @@ class AudioManager {
     this.streamMedia = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: event.target.value } } });
     this.sourceNode = this.audioContext.createMediaStreamSource(this.streamMedia);
     this.sourceNode.connect(this.pcmWorker);
-    this.pcmWorker.port.onmessage = (message) => {
-      this.audioBuffer = message.data;
-    };
+    this.pcmWorker.port.onmessage = updateCanvas;
     this.audioContext.resume();
   }
 }
 
+let canvas = document.getElementById("amplitude");
+let CANVAS_HEIGHT = canvas.height;
+let CANVAS_WIDTH = canvas.width;
+let canvasContext = canvas.getContext("2d");
+canvasContext.lineWidth = 1;
+function updateCanvas(event) {
+  canvasContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  canvasContext.beginPath();
+  let index = 0;
+  canvasContext.moveTo(index, 100);
+  event.data.forEach((sample) => {
+    canvasContext.lineTo(index, 100 + 100 * sample);
+    index++;
+  })
+  canvasContext.moveTo(index, 100);
+  canvasContext.closePath()
+  canvasContext.stroke();
+}
 
 main();
 
@@ -68,26 +84,4 @@ async function main() {
   let audioManager = new AudioManager();
   await audioManager.getAudioPerms();
   await audioManager.setupDeviceList();
-
 }
-
-
-
-//canvas
-let canvas = document.getElementById("amplitude").getContext("2d");
-canvas.fillStyle = "red";
-async function showData(event) {
-  canvas.clearRect(0, 0, 10, 100);
-  console.log(await event.data.text());
-}
-
-/*
-async function getAudioTrack(device) {
-  tracks = device.getTracks();
-  if (tracks.length == 0) {
-    throw new Error("No audio tracks available");
-  }
-  console.log(tracks.length);
-  return tracks[0];
-}
-*/
